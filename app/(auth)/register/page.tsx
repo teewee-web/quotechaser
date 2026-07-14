@@ -1,0 +1,1 @@
+import { AuthForm } from "@/components/auth-form";import { AuthShell } from "@/components/auth-shell";import { register } from "../actions";export default function Page(){return <AuthShell title="Create your account" copy="Start keeping on top of every quote."><AuthForm mode="register" action={register}/></AuthShell>}

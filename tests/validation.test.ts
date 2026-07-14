@@ -1,0 +1,3 @@
+import {describe,expect,it} from "vitest";import {customerSchema,quoteSchema} from "../lib/validation";
+describe("customer validation",()=>{it("requires a useful name",()=>expect(customerSchema.safeParse({name:"A",mobile:"",email:"",address:"",notes:""}).success).toBe(false));it("accepts minimal customer",()=>expect(customerSchema.safeParse({name:"Al Brown",mobile:"",email:"",address:"",notes:""}).success).toBe(true))});
+describe("quote validation",()=>{it("rejects zero value",()=>expect(quoteSchema.safeParse({customer_id:"4eebf843-3996-4fbd-9ba0-32498c575b21",job_description:"Paint room",value:0,quote_date:"2026-07-14",status:"Sent",next_follow_up_date:"",notes:""}).success).toBe(false))});

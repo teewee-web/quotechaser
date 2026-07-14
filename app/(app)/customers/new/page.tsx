@@ -1,0 +1,1 @@
+import { PageHeader } from "@/components/nav";import { CustomerForm } from "@/components/customer-form";export default function Page(){return <><PageHeader title="Add customer" description="Only the name is required."/><CustomerForm/></>}

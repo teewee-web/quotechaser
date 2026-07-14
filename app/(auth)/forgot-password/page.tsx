@@ -1,0 +1,1 @@
+import { AuthForm } from "@/components/auth-form";import { AuthShell } from "@/components/auth-shell";import { resetPassword } from "../actions";export default function Page(){return <AuthShell title="Reset your password" copy="We’ll email you a secure reset link."><AuthForm mode="reset" action={resetPassword}/></AuthShell>}

@@ -1,0 +1,3 @@
+import {describe,expect,it} from "vitest";import {daysBetween,fillTemplate,gbp,ukDate,whatsappUrl} from "../lib/format";
+describe("UK formatting",()=>{it("formats GBP",()=>expect(gbp(185050)).toBe("£1,850.50"));it("formats dates DD/MM/YYYY",()=>expect(ukDate("2026-07-14")).toBe("14/07/2026"));it("counts calendar days",()=>expect(daysBetween("2026-07-01","2026-07-14")).toBe(13))});
+describe("messages",()=>{it("fills placeholders",()=>expect(fillTemplate("Hi [customer name], [job description]",{"customer name":"Sarah","job description":"painting"})).toBe("Hi Sarah, painting"));it("creates UK WhatsApp URL",()=>expect(whatsappUrl("07700 900123","Hello")).toBe("https://wa.me/447700900123?text=Hello"))});

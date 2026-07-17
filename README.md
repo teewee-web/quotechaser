@@ -18,7 +18,7 @@ Quote-Chaser is a production-oriented, mobile-first quote follow-up application 
 2. Create a Supabase project.
 3. In the Supabase SQL editor, run `supabase/migrations/202607140001_initial_schema.sql` in full, followed by `supabase/migrations/202607140002_pdf_quotes.sql`.
 4. In **Authentication → URL Configuration**, set the Site URL to `http://localhost:3000` and add `http://localhost:3000/**` as a redirect URL.
-5. Copy `.env.example` to `.env.local` and enter the project URL and publishable/anon key from **Project Settings → API**. Never add the service-role key.
+5. Copy `.env.example` to `.env.local` and enter the project URL and publishable/anon key from **Project Settings → API**. Never add the service-role key. To enable analytics, also add the PostHog project token and regional ingestion host from your PostHog project settings.
 6. Run:
 
    ```bash
@@ -61,12 +61,16 @@ npm run build
 
 1. Push the project to a Git repository and import it at Vercel.
 2. Keep Framework Preset as **Next.js** and leave build command as `npm run build`.
-3. Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` for Production, Preview and Development in **Project Settings → Environment Variables**.
+3. Add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` and `NEXT_PUBLIC_POSTHOG_HOST` for Production, Preview and Development in **Project Settings → Environment Variables**.
 4. Deploy and copy the assigned HTTPS URL.
 5. Add that URL as the Supabase Site URL and add `<vercel-url>/**` to Authentication redirect URLs. Add the custom domain in both services if used.
 6. Redeploy after changing environment variables, then verify registration, confirmation, login and password reset on the production domain.
 
 No database or service-role secrets are required by the browser or Vercel build.
+
+## PostHog analytics
+
+Create a PostHog project in the EU region, then copy its project token and ingestion host into `.env.local` and Vercel. The integration records `signup_started`, `signup_completed`, `user_login`, `customer_created`, `quote_created` and `pdf_generated`. It identifies signed-in users by their Supabase UUID only. Customer details, quote contents and monetary values are never attached to analytics events. Autocapture, session recording and persistent analytics cookies are disabled.
 
 ## Project structure
 

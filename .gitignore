@@ -7,6 +7,9 @@ coverage
 *.tsbuildinfo
 work/
 .npm-cache/
+.localappdata/
+.vercel-data/
+.git-publish/
 npm-debug.log*
 *.pem
 *.p12

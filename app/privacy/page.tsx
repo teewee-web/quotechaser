@@ -2,18 +2,180 @@ import type { Metadata } from "next";
 import { LegalPage, SUPPORT_EMAIL } from "@/components/legal-page";
 import { LegalSection } from "@/components/legal-section";
 
-export const metadata: Metadata = { title: "Privacy Policy", description: "How Quote-Chaser collects, uses, protects and retains personal data." };
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "How Quote-Chaser collects, uses, protects and retains personal data.",
+};
 
-export default function Privacy() { return <LegalPage eyebrow="Your data" title="Privacy Policy" summary="This policy explains how Quote-Chaser handles account information and the customer and quotation data that tradespeople store in the service.">
-  <LegalSection title="1. Who we are"><p>Quote-Chaser is the data controller for personal information used to create and administer Quote-Chaser accounts, operate the service and provide support. You can contact us at <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.</p><p>When a business user adds information about their own customers, that business user decides why and how that information is used. In that context, the business user is normally the controller and Quote-Chaser acts as its service provider.</p></LegalSection>
-  <LegalSection title="2. Information we collect"><ul><li><strong>Account information:</strong> name, email address, authentication identifiers and account activity.</li><li><strong>Business settings:</strong> business name, telephone number, address, branding, review link and message templates.</li><li><strong>Customer and quote data:</strong> customer names, contact details, addresses, notes, job descriptions, quote values, dates, statuses, follow-up history and PDF quote content.</li><li><strong>Technical information:</strong> essential security, diagnostic and service logs, such as IP address, browser information and error details.</li><li><strong>Support correspondence:</strong> information supplied when you contact us.</li></ul><p>Please do not store special-category or highly sensitive personal data unless it is genuinely necessary and you have a lawful reason to do so.</p></LegalSection>
-  <LegalSection title="3. How and why we use information"><p>We use personal information to provide accounts, store and display records, generate quotations, schedule follow-ups, open customer communications, maintain security, diagnose faults, answer support requests and improve the service.</p><p>Our lawful bases are normally performance of our contract with account holders, our legitimate interests in operating and securing the service, compliance with legal obligations and, where required, consent.</p></LegalSection>
-  <LegalSection title="4. Customer communications"><p>Quote-Chaser prepares links and message text for calls, WhatsApp follow-ups and review requests. The account holder chooses whether to send them and is responsible for having a lawful basis for contacting each customer and for complying with applicable direct-marketing rules.</p></LegalSection>
-  <LegalSection title="5. Who receives information"><p>We use trusted service providers to host and operate Quote-Chaser, including Supabase for authentication and database services and Vercel for application hosting and delivery. They process information under contractual and security obligations. We may also disclose information where required by law, to protect legal rights or in connection with a business sale or restructuring.</p><p>We do not sell personal data.</p></LegalSection>
-  <LegalSection title="6. International transfers"><p>Some service providers may process information outside the United Kingdom. Where that happens, we use appropriate safeguards recognised by UK data-protection law, such as adequacy regulations or approved contractual protections.</p></LegalSection>
-  <LegalSection title="7. Security"><p>We use access controls, encrypted connections, managed infrastructure and database Row Level Security designed to keep each authenticated user&apos;s records separate. No online service can guarantee absolute security, so users must keep login details secure and notify us promptly of suspected unauthorised access.</p></LegalSection>
-  <LegalSection title="8. Retention"><p>We keep account and service data while an account is active and for a limited period afterwards where needed for recovery, security, fraud prevention, legal claims or statutory obligations. Support and transaction records may be kept for longer where the law requires it. Backup copies are removed through normal backup rotation.</p></LegalSection>
-  <LegalSection title="9. Your rights"><p>Depending on the circumstances, UK data-protection law gives you rights to access, correct, erase or restrict your information, object to certain processing and receive portable data. You may also withdraw consent where processing relies on consent.</p><p>To exercise a right, email <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>. We may need to verify your identity. You may also complain to the UK Information Commissioner&apos;s Office at <a href="https://ico.org.uk/make-a-complaint/" target="_blank" rel="noreferrer">ico.org.uk</a>.</p></LegalSection>
-  <LegalSection title="10. Cookies and local storage"><p>Quote-Chaser uses essential browser storage and authentication cookies to keep users signed in, protect accounts and provide the service. If optional analytics or advertising technologies are introduced, this policy and the appropriate consent controls will be updated first.</p></LegalSection>
-  <LegalSection title="11. Changes to this policy"><p>We may update this policy when the service, our providers or the law changes. Material changes will be highlighted in the service or communicated by email where appropriate.</p></LegalSection>
-</LegalPage>; }
+export default function Privacy() {
+  return (
+    <LegalPage
+      eyebrow="Your data"
+      title="Privacy Policy"
+      summary="This policy explains how Quote-Chaser handles account information and the customer and quotation data that tradespeople store in the service."
+    >
+      <LegalSection title="1. Who we are">
+        <p>
+          Quote-Chaser is the data controller for personal information used to
+          create and administer Quote-Chaser accounts, operate the service and
+          provide support. You can contact us at{" "}
+          <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+        </p>
+        <p>
+          When a business user adds information about their own customers, that
+          business user decides why and how that information is used. In that
+          context, the business user is normally the controller and Quote-Chaser
+          acts as its service provider.
+        </p>
+      </LegalSection>
+      <LegalSection title="2. Information we collect">
+        <ul>
+          <li>
+            <strong>Account information:</strong> name, email address,
+            authentication identifiers and account activity.
+          </li>
+          <li>
+            <strong>Business settings:</strong> business name, telephone number,
+            address, branding, review link and message templates.
+          </li>
+          <li>
+            <strong>Customer and quote data:</strong> customer names, contact
+            details, addresses, notes, job descriptions, quote values, dates,
+            statuses, follow-up history and PDF quote content.
+          </li>
+          <li>
+            <strong>Technical information:</strong> essential security,
+            diagnostic and service logs, such as IP address, browser information
+            and error details.
+          </li>
+          <li>
+            <strong>Support correspondence:</strong> information supplied when
+            you contact us.
+          </li>
+        </ul>
+        <p>
+          Please do not store special-category or highly sensitive personal data
+          unless it is genuinely necessary and you have a lawful reason to do
+          so.
+        </p>
+      </LegalSection>
+      <LegalSection title="3. How and why we use information">
+        <p>
+          We use personal information to provide accounts, store and display
+          records, generate quotations, schedule follow-ups, open customer
+          communications, maintain security, diagnose faults, answer support
+          requests and improve the service.
+        </p>
+        <p>
+          Our lawful bases are normally performance of our contract with account
+          holders, our legitimate interests in operating and securing the
+          service, compliance with legal obligations and, where required,
+          consent.
+        </p>
+      </LegalSection>
+      <LegalSection title="4. Customer communications">
+        <p>
+          Quote-Chaser prepares links and message text for calls, WhatsApp
+          follow-ups and review requests. The account holder chooses whether to
+          send them and is responsible for having a lawful basis for contacting
+          each customer and for complying with applicable direct-marketing
+          rules.
+        </p>
+      </LegalSection>
+      <LegalSection title="5. Who receives information">
+        <p>
+          We use trusted service providers to host and operate Quote-Chaser,
+          including Supabase for authentication and database services, Vercel
+          for application hosting and delivery, and PostHog for limited product
+          analytics. They process information under contractual and security
+          obligations. We may also disclose information where required by law,
+          to protect legal rights or in connection with a business sale or
+          restructuring.
+        </p>
+        <p>We do not sell personal data.</p>
+      </LegalSection>
+      <LegalSection title="6. International transfers">
+        <p>
+          Some service providers may process information outside the United
+          Kingdom. Where that happens, we use appropriate safeguards recognised
+          by UK data-protection law, such as adequacy regulations or approved
+          contractual protections.
+        </p>
+      </LegalSection>
+      <LegalSection title="7. Security">
+        <p>
+          We use access controls, encrypted connections, managed infrastructure
+          and database Row Level Security designed to keep each authenticated
+          user&apos;s records separate. No online service can guarantee absolute
+          security, so users must keep login details secure and notify us
+          promptly of suspected unauthorised access.
+        </p>
+      </LegalSection>
+      <LegalSection title="8. Retention">
+        <p>
+          We keep account and service data while an account is active and for a
+          limited period afterwards where needed for recovery, security, fraud
+          prevention, legal claims or statutory obligations. Support and
+          transaction records may be kept for longer where the law requires it.
+          Backup copies are removed through normal backup rotation.
+        </p>
+      </LegalSection>
+      <LegalSection title="9. Your rights">
+        <p>
+          Depending on the circumstances, UK data-protection law gives you
+          rights to access, correct, erase or restrict your information, object
+          to certain processing and receive portable data. You may also withdraw
+          consent where processing relies on consent.
+        </p>
+        <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 font-bold text-amber-950">
+          <strong>Your right to object:</strong> you can object at any time to
+          personal information being used for direct marketing. If you do, that
+          use will stop.
+        </p>
+        <p>
+          To exercise a right, email{" "}
+          <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>. We may need
+          to verify your identity. You may also complain to the UK Information
+          Commissioner&apos;s Office at{" "}
+          <a
+            href="https://ico.org.uk/make-a-complaint/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            ico.org.uk
+          </a>
+          .
+        </p>
+      </LegalSection>
+      <LegalSection title="10. Analytics, cookies and local storage">
+        <p>
+          Quote-Chaser uses essential browser storage and authentication cookies
+          to keep users signed in, protect accounts and provide the service.
+        </p>
+        <p>
+          We use PostHog to record a limited set of product events such as
+          account registration, login, customer and quote creation, and PDF
+          generation. Events use a pseudonymous account identifier and do not
+          include customer names, contact details, job descriptions, quote
+          values or PDF contents. PostHog autocapture and session recording are
+          disabled, and browser analytics are configured without persistent
+          analytics cookies. We use this information for our legitimate interest
+          in understanding and improving the service.
+        </p>
+        <p>
+          If advertising technologies or broader optional analytics are
+          introduced, this policy and the appropriate consent controls will be
+          updated first.
+        </p>
+      </LegalSection>
+      <LegalSection title="11. Changes to this policy">
+        <p>
+          We may update this policy when the service, our providers or the law
+          changes. Material changes will be highlighted in the service or
+          communicated by email where appropriate.
+        </p>
+      </LegalSection>
+    </LegalPage>
+  );
+}

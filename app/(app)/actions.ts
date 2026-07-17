@@ -1,11 +1,272 @@
 "use server";
-import {revalidatePath} from "next/cache";import {redirect} from "next/navigation";import {createClient} from "@/lib/supabase/server";import {customerSchema,quoteSchema} from "@/lib/validation";import {todayISO} from "@/lib/format";import {calculateQuoteTotals,defaultExpiry,type QuoteItemInput} from "@/lib/quote-pdf";
-async function owned(){const s=await createClient();const{data:{user}}=await s.auth.getUser();if(!user)throw new Error("Please log in again.");return{s,user}}
-export async function saveCustomer(form:FormData){const p=customerSchema.safeParse(Object.fromEntries(form));if(!p.success)throw new Error(p.error.issues[0].message);const{s,user}=await owned(),id=String(form.get("id")||"");const row={...p.data,email:p.data.email||null,mobile:p.data.mobile||null,address:p.data.address||null,notes:p.data.notes||null,user_id:user.id};const q=id?s.from("customers").update(row).eq("id",id):s.from("customers").insert(row);const{error}=await q;if(error)throw new Error(error.message);revalidatePath("/customers");redirect("/customers")}
-export async function deleteCustomer(form:FormData){const{s}=await owned();const{error}=await s.from("customers").delete().eq("id",String(form.get("id")));if(error)throw new Error(error.message);revalidatePath("/customers")}
-export async function saveQuote(form:FormData){const p=quoteSchema.safeParse(Object.fromEntries(form));if(!p.success)throw new Error(p.error.issues[0].message);const{s,user}=await owned();let id=String(form.get("id")||"");let items:QuoteItemInput[]=[];try{items=JSON.parse(String(form.get("items_json")||"[]"))}catch{throw new Error("The quote items could not be read.")}if(!Array.isArray(items)||items.some(i=>!i.description?.trim()||!Number.isFinite(i.quantity)||i.quantity<=0||!Number.isFinite(i.unitPricePence)||i.unitPricePence<0))throw new Error("Each item needs a description, quantity and valid price.");if(!items.length)items=[{description:p.data.job_description,quantity:1,unitPricePence:Math.round(p.data.value*100)}];const totals=calculateQuoteTotals(items,p.data.discount_type,p.data.discount_value,!!p.data.vat_enabled,p.data.vat_rate);let follow=p.data.next_follow_up_date||null;if(p.data.status==="Sent"&&!follow){const d=new Date(`${p.data.quote_date}T12:00:00Z`);d.setUTCDate(d.getUTCDate()+3);follow=d.toISOString().slice(0,10)}const row={customer_id:p.data.customer_id,job_description:p.data.job_description,value_pence:totals.finalTotalPence,quote_date:p.data.quote_date,expiry_date:p.data.expiry_date||defaultExpiry(p.data.quote_date),status:p.data.status,next_follow_up_date:follow,notes:p.data.notes||null,user_id:user.id,subtotal:totals.subtotalPence,discount_type:p.data.discount_type,discount_value:p.data.discount_value,vat_enabled:!!p.data.vat_enabled,vat_rate:p.data.vat_rate,vat_amount:totals.vatPence,final_total:totals.finalTotalPence,payment_terms:p.data.payment_terms||null,terms_and_conditions:p.data.terms_and_conditions||null};if(id){const{error}=await s.from("quotes").update(row).eq("id",id);if(error)throw new Error(error.message)}else{const{data,error}=await s.from("quotes").insert(row).select("id").single();if(error||!data)throw new Error(error?.message||"The quote could not be created.");id=data.id}const{error:deleteError}=await s.from("quote_items").delete().eq("quote_id",id);if(deleteError)throw new Error("The quote was saved, but its items could not be updated.");const{error:itemError}=await s.from("quote_items").insert(items.map((item,index)=>({user_id:user.id,quote_id:id,description:item.description.trim(),quantity:item.quantity,unit_price:item.unitPricePence,line_total:Math.round(item.quantity*item.unitPricePence),sort_order:index})));if(itemError)throw new Error("The quote was saved, but its items could not be added.");revalidatePath("/quotes");revalidatePath(`/quotes/${id}`);revalidatePath("/dashboard");redirect(`/quotes/${id}`)}
-export async function updateQuoteStatus(form:FormData){const{s}=await owned();const id=String(form.get("id")),status=String(form.get("status"));if(!["Won","Lost"].includes(status))throw new Error("Choose a valid quote status.");const patch:Record<string,string|null>={status};if(status==="Won")patch.next_follow_up_date=null;const{error}=await s.from("quotes").update(patch).eq("id",id);if(error)throw new Error("The quote status could not be changed.");revalidatePath("/quotes");revalidatePath("/dashboard");revalidatePath("/reports")}
-export async function deleteQuote(form:FormData){const{s}=await owned();const{error}=await s.from("quotes").delete().eq("id",String(form.get("id")));if(error)throw new Error(error.message);revalidatePath("/quotes")}
-export async function followUp(form:FormData){const{s,user}=await owned(),quoteId=String(form.get("id")),action=String(form.get("action"));if(!["completed","snooze"].includes(action))throw new Error("Choose a valid follow-up action.");let next:null|string=null;if(action==="snooze"){const days=Number(form.get("days")||3);if(![1,3,7,14].includes(days))throw new Error("Choose a valid snooze period.");const d=new Date(`${todayISO()}T12:00:00Z`);d.setUTCDate(d.getUTCDate()+days);next=d.toISOString().slice(0,10)}const{error:historyError}=await s.from("follow_up_history").insert({user_id:user.id,quote_id:quoteId,action,notes:null});if(historyError)throw new Error("The follow-up could not be recorded.");const{error}=await s.from("quotes").update({next_follow_up_date:next,status:"Pending"}).eq("id",quoteId);if(error)throw new Error("The next follow-up date could not be updated.");revalidatePath("/follow-ups");revalidatePath("/dashboard")}
-export async function completeJob(form:FormData){const{s}=await owned();const{error}=await s.from("quotes").update({completed_at:new Date().toISOString()}).eq("id",String(form.get("id"))).eq("status","Won");if(error)throw new Error(error.message);revalidatePath("/quotes")}
-export async function saveSettings(form:FormData){const{s,user}=await owned();const schedule=String(form.get("follow_up_schedule")).split(",").map(Number).filter(n=>Number.isInteger(n)&&n>0);if(!schedule.length)throw new Error("Enter at least one follow-up day.");let logoUrl=String(form.get("existing_logo_url")||"")||null;const logo=form.get("logo");if(logo instanceof File&&logo.size){if(logo.size>2097152)throw new Error("Your logo must be smaller than 2 MB.");if(!["image/png","image/jpeg","image/webp"].includes(logo.type))throw new Error("Use a PNG, JPG or WebP logo.");const ext=logo.name.split(".").pop()?.toLowerCase()||"png",path=`${user.id}/logo.${ext}`;const{error}=await s.storage.from("business-logos").upload(path,logo,{upsert:true,contentType:logo.type});if(error)throw new Error("Your logo could not be uploaded.");logoUrl=path}const row={user_id:user.id,business_name:String(form.get("business_name")),user_name:String(form.get("user_name")),telephone:String(form.get("telephone")),google_review_link:String(form.get("google_review_link")),follow_up_message:String(form.get("follow_up_message")),review_request_message:String(form.get("review_request_message")),follow_up_schedule:schedule,logo_url:logoUrl,business_address:String(form.get("business_address")),business_email:String(form.get("business_email")),vat_registered:form.get("vat_registered")==="on",vat_number:String(form.get("vat_number")),default_vat_rate:Number(form.get("default_vat_rate")||20),default_payment_terms:String(form.get("default_payment_terms")),default_terms_and_conditions:String(form.get("default_terms_and_conditions")),default_quote_validity_days:Number(form.get("default_quote_validity_days")||30)};const{error}=await s.from("user_settings").upsert(row,{onConflict:"user_id"});if(error)throw new Error(error.message);revalidatePath("/settings");redirect("/settings?saved=1")}
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { customerSchema, quoteSchema } from "@/lib/validation";
+import { todayISO } from "@/lib/format";
+import {
+  calculateQuoteTotals,
+  defaultExpiry,
+  type QuoteItemInput,
+} from "@/lib/quote-pdf";
+import { captureServerEvent } from "@/lib/analytics";
+async function owned() {
+  const s = await createClient();
+  const {
+    data: { user },
+  } = await s.auth.getUser();
+  if (!user) throw new Error("Please log in again.");
+  return { s, user };
+}
+export async function saveCustomer(form: FormData) {
+  const p = customerSchema.safeParse(Object.fromEntries(form));
+  if (!p.success) throw new Error(p.error.issues[0].message);
+  const { s, user } = await owned(),
+    id = String(form.get("id") || "");
+  const isNew = !id;
+  const row = {
+    ...p.data,
+    email: p.data.email || null,
+    mobile: p.data.mobile || null,
+    address: p.data.address || null,
+    notes: p.data.notes || null,
+    user_id: user.id,
+  };
+  const q = id
+    ? s.from("customers").update(row).eq("id", id)
+    : s.from("customers").insert(row);
+  const { error } = await q;
+  if (error) throw new Error(error.message);
+  if (isNew)
+    await captureServerEvent(user.id, "customer_created", {
+      source: "customer_page",
+    });
+  revalidatePath("/customers");
+  redirect("/customers");
+}
+export async function deleteCustomer(form: FormData) {
+  const { s } = await owned();
+  const { error } = await s
+    .from("customers")
+    .delete()
+    .eq("id", String(form.get("id")));
+  if (error) throw new Error(error.message);
+  revalidatePath("/customers");
+}
+export async function saveQuote(form: FormData) {
+  const p = quoteSchema.safeParse(Object.fromEntries(form));
+  if (!p.success) throw new Error(p.error.issues[0].message);
+  const { s, user } = await owned();
+  let id = String(form.get("id") || "");
+  const isNew = !id;
+  let items: QuoteItemInput[] = [];
+  try {
+    items = JSON.parse(String(form.get("items_json") || "[]"));
+  } catch {
+    throw new Error("The quote items could not be read.");
+  }
+  if (
+    !Array.isArray(items) ||
+    items.some(
+      (i) =>
+        !i.description?.trim() ||
+        !Number.isFinite(i.quantity) ||
+        i.quantity <= 0 ||
+        !Number.isFinite(i.unitPricePence) ||
+        i.unitPricePence < 0,
+    )
+  )
+    throw new Error("Each item needs a description, quantity and valid price.");
+  if (!items.length)
+    items = [
+      {
+        description: p.data.job_description,
+        quantity: 1,
+        unitPricePence: Math.round(p.data.value * 100),
+      },
+    ];
+  const totals = calculateQuoteTotals(
+    items,
+    p.data.discount_type,
+    p.data.discount_value,
+    !!p.data.vat_enabled,
+    p.data.vat_rate,
+  );
+  let follow = p.data.next_follow_up_date || null;
+  if (p.data.status === "Sent" && !follow) {
+    const d = new Date(`${p.data.quote_date}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + 3);
+    follow = d.toISOString().slice(0, 10);
+  }
+  const row = {
+    customer_id: p.data.customer_id,
+    job_description: p.data.job_description,
+    value_pence: totals.finalTotalPence,
+    quote_date: p.data.quote_date,
+    expiry_date: p.data.expiry_date || defaultExpiry(p.data.quote_date),
+    status: p.data.status,
+    next_follow_up_date: follow,
+    notes: p.data.notes || null,
+    user_id: user.id,
+    subtotal: totals.subtotalPence,
+    discount_type: p.data.discount_type,
+    discount_value: p.data.discount_value,
+    vat_enabled: !!p.data.vat_enabled,
+    vat_rate: p.data.vat_rate,
+    vat_amount: totals.vatPence,
+    final_total: totals.finalTotalPence,
+    payment_terms: p.data.payment_terms || null,
+    terms_and_conditions: p.data.terms_and_conditions || null,
+  };
+  if (id) {
+    const { error } = await s.from("quotes").update(row).eq("id", id);
+    if (error) throw new Error(error.message);
+  } else {
+    const { data, error } = await s
+      .from("quotes")
+      .insert(row)
+      .select("id")
+      .single();
+    if (error || !data)
+      throw new Error(error?.message || "The quote could not be created.");
+    id = data.id;
+  }
+  const { error: deleteError } = await s
+    .from("quote_items")
+    .delete()
+    .eq("quote_id", id);
+  if (deleteError)
+    throw new Error("The quote was saved, but its items could not be updated.");
+  const { error: itemError } = await s
+    .from("quote_items")
+    .insert(
+      items.map((item, index) => ({
+        user_id: user.id,
+        quote_id: id,
+        description: item.description.trim(),
+        quantity: item.quantity,
+        unit_price: item.unitPricePence,
+        line_total: Math.round(item.quantity * item.unitPricePence),
+        sort_order: index,
+      })),
+    );
+  if (itemError)
+    throw new Error("The quote was saved, but its items could not be added.");
+  if (isNew) await captureServerEvent(user.id, "quote_created");
+  revalidatePath("/quotes");
+  revalidatePath(`/quotes/${id}`);
+  revalidatePath("/dashboard");
+  redirect(`/quotes/${id}`);
+}
+export async function updateQuoteStatus(form: FormData) {
+  const { s } = await owned();
+  const id = String(form.get("id")),
+    status = String(form.get("status"));
+  if (!["Won", "Lost"].includes(status))
+    throw new Error("Choose a valid quote status.");
+  const patch: Record<string, string | null> = { status };
+  if (status === "Won") patch.next_follow_up_date = null;
+  const { error } = await s.from("quotes").update(patch).eq("id", id);
+  if (error) throw new Error("The quote status could not be changed.");
+  revalidatePath("/quotes");
+  revalidatePath("/dashboard");
+  revalidatePath("/reports");
+}
+export async function deleteQuote(form: FormData) {
+  const { s } = await owned();
+  const { error } = await s
+    .from("quotes")
+    .delete()
+    .eq("id", String(form.get("id")));
+  if (error) throw new Error(error.message);
+  revalidatePath("/quotes");
+}
+export async function followUp(form: FormData) {
+  const { s, user } = await owned(),
+    quoteId = String(form.get("id")),
+    action = String(form.get("action"));
+  if (!["completed", "snooze"].includes(action))
+    throw new Error("Choose a valid follow-up action.");
+  let next: null | string = null;
+  if (action === "snooze") {
+    const days = Number(form.get("days") || 3);
+    if (![1, 3, 7, 14].includes(days))
+      throw new Error("Choose a valid snooze period.");
+    const d = new Date(`${todayISO()}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + days);
+    next = d.toISOString().slice(0, 10);
+  }
+  const { error: historyError } = await s
+    .from("follow_up_history")
+    .insert({ user_id: user.id, quote_id: quoteId, action, notes: null });
+  if (historyError) throw new Error("The follow-up could not be recorded.");
+  const { error } = await s
+    .from("quotes")
+    .update({ next_follow_up_date: next, status: "Pending" })
+    .eq("id", quoteId);
+  if (error) throw new Error("The next follow-up date could not be updated.");
+  revalidatePath("/follow-ups");
+  revalidatePath("/dashboard");
+}
+export async function completeJob(form: FormData) {
+  const { s } = await owned();
+  const { error } = await s
+    .from("quotes")
+    .update({ completed_at: new Date().toISOString() })
+    .eq("id", String(form.get("id")))
+    .eq("status", "Won");
+  if (error) throw new Error(error.message);
+  revalidatePath("/quotes");
+}
+export async function saveSettings(form: FormData) {
+  const { s, user } = await owned();
+  const schedule = String(form.get("follow_up_schedule"))
+    .split(",")
+    .map(Number)
+    .filter((n) => Number.isInteger(n) && n > 0);
+  if (!schedule.length) throw new Error("Enter at least one follow-up day.");
+  let logoUrl = String(form.get("existing_logo_url") || "") || null;
+  const logo = form.get("logo");
+  if (logo instanceof File && logo.size) {
+    if (logo.size > 2097152)
+      throw new Error("Your logo must be smaller than 2 MB.");
+    if (!["image/png", "image/jpeg", "image/webp"].includes(logo.type))
+      throw new Error("Use a PNG, JPG or WebP logo.");
+    const ext = logo.name.split(".").pop()?.toLowerCase() || "png",
+      path = `${user.id}/logo.${ext}`;
+    const { error } = await s.storage
+      .from("business-logos")
+      .upload(path, logo, { upsert: true, contentType: logo.type });
+    if (error) throw new Error("Your logo could not be uploaded.");
+    logoUrl = path;
+  }
+  const row = {
+    user_id: user.id,
+    business_name: String(form.get("business_name")),
+    user_name: String(form.get("user_name")),
+    telephone: String(form.get("telephone")),
+    google_review_link: String(form.get("google_review_link")),
+    follow_up_message: String(form.get("follow_up_message")),
+    review_request_message: String(form.get("review_request_message")),
+    follow_up_schedule: schedule,
+    logo_url: logoUrl,
+    business_address: String(form.get("business_address")),
+    business_email: String(form.get("business_email")),
+    vat_registered: form.get("vat_registered") === "on",
+    vat_number: String(form.get("vat_number")),
+    default_vat_rate: Number(form.get("default_vat_rate") || 20),
+    default_payment_terms: String(form.get("default_payment_terms")),
+    default_terms_and_conditions: String(
+      form.get("default_terms_and_conditions"),
+    ),
+    default_quote_validity_days: Number(
+      form.get("default_quote_validity_days") || 30,
+    ),
+  };
+  const { error } = await s
+    .from("user_settings")
+    .upsert(row, { onConflict: "user_id" });
+  if (error) throw new Error(error.message);
+  revalidatePath("/settings");
+  redirect("/settings?saved=1");
+}

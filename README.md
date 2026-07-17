@@ -1,6 +1,6 @@
-# QuoteChaser
+# Quotalign
 
-QuoteChaser is a production-oriented, mobile-first quote follow-up application for UK tradespeople. It uses Next.js App Router, TypeScript, Tailwind CSS and Supabase, with installable PWA support and Vercel-compatible deployment.
+Quotalign is a production-oriented, mobile-first quote follow-up application for UK tradespeople. It uses Next.js App Router, TypeScript, Tailwind CSS and Supabase, with installable PWA support and Vercel-compatible deployment.
 
 ## Features
 

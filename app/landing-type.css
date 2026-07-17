@@ -17,4 +17,4 @@
 
 /* Reliable standalone typography and hero artwork. */
 .lp{font-family:"Segoe UI Variable Text","Segoe UI",Arial,sans-serif!important}.lp h1,.lp h2,.lp h3,.lp strong,.lp b{font-family:"Segoe UI Variable Display","Segoe UI",Arial,sans-serif!important}.lp-hero h1{font-weight:950!important;letter-spacing:-.06em}.lp-hero-visual{background:#dce4e1}.lp-hero-visual>img{display:block!important;object-fit:cover;object-position:center}.lp-strip{min-height:92px;align-items:center;padding-top:26px;padding-bottom:26px}.lp-strip span{font-size:18px!important;font-weight:850}.lp-strip svg{width:24px;height:24px}.lp-trust{font-size:16px}.lp-trust svg{width:20px;height:20px}
-@media(max-width:700px){.lp-hero-visual>img{object-position:62% center}.lp-strip{min-height:78px;padding-top:20px;padding-bottom:20px}.lp-strip span{font-size:16px!important}.lp-strip svg{width:22px;height:22px}}
+@media(max-width:700px){.lp-hero-visual>img{object-position:right center}.lp-strip{min-height:78px;padding-top:20px;padding-bottom:20px}.lp-strip span{font-size:16px!important}.lp-strip svg{width:22px;height:22px}}

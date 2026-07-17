@@ -1,0 +1,13 @@
+import Link from "next/link";
+import { ArrowLeft, Mail, ShieldCheck } from "lucide-react";
+import { Logo } from "@/components/logo";
+
+export const SUPPORT_EMAIL = "support@quote-chaser.com";
+
+export function LegalPage({ eyebrow, title, summary, updated = "17 July 2026", children }: { eyebrow: string; title: string; summary: string; updated?: string; children: React.ReactNode }) {
+  return <main className="min-h-screen bg-[#f3f5f3] text-[#17211f]">
+    <header className="border-b border-white/10 bg-[#102522] text-white"><div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-5 sm:px-8"><Link href="/" aria-label="Quote-Chaser home"><Logo inverse /></Link><Link href="/" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/20 px-4 font-extrabold text-white hover:bg-white/10"><ArrowLeft size={18} /> Back to home</Link></div></header>
+    <section className="border-b border-[#dbe2df] bg-gradient-to-br from-[#102522] to-[#0a655d] text-white"><div className="mx-auto max-w-4xl px-5 py-14 sm:px-8 sm:py-20"><p className="text-sm font-black uppercase tracking-[.18em] text-amber-300">{eyebrow}</p><h1 className="mt-4 max-w-3xl text-4xl font-black leading-tight tracking-[-.045em] text-white sm:text-6xl">{title}</h1><p className="mt-5 max-w-3xl text-lg leading-8 text-teal-50 sm:text-xl">{summary}</p><p className="mt-7 text-sm font-bold text-teal-100">Last updated: {updated}</p></div></section>
+    <div className="mx-auto grid max-w-6xl gap-8 px-5 py-10 sm:px-8 sm:py-14 lg:grid-cols-[minmax(0,1fr)_280px]"><article className="legal-copy card qc-card p-6 sm:p-9">{children}</article><aside className="space-y-5 lg:sticky lg:top-6 lg:self-start"><div className="card qc-card p-6"><ShieldCheck className="text-teal-700" size={28} /><h2 className="mt-4 text-xl">Need help?</h2><p className="muted mt-2 leading-7">Ask us about your account, privacy rights or these terms.</p><a className="btn btn-primary mt-5 w-full" href={`mailto:${SUPPORT_EMAIL}`}><Mail size={18} /> Email support</a></div><nav className="card qc-card grid gap-2 p-4" aria-label="Legal and support pages"><Link className="rounded-xl px-3 py-3 font-extrabold hover:bg-teal-50" href="/privacy">Privacy Policy</Link><Link className="rounded-xl px-3 py-3 font-extrabold hover:bg-teal-50" href="/terms">Terms of Service</Link><Link className="rounded-xl px-3 py-3 font-extrabold hover:bg-teal-50" href="/contact">Contact</Link><Link className="rounded-xl px-3 py-3 font-extrabold hover:bg-teal-50" href="/account-deletion">Delete your account</Link></nav></aside></div>
+  </main>;
+}

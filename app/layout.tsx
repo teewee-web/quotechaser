@@ -5,7 +5,7 @@ import { TextEncodingRepair } from "@/components/text-encoding-repair";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
-  title: { default: "QuoteAlign", template: "%s | QuoteAlign" },
+  title: { default: "Quote-Chaser", template: "%s | Quote-Chaser" },
   description: "Follow up quotes and win more work.",
   manifest: "/manifest.webmanifest",
   icons: { icon: "/icons/icon.svg" },

@@ -1,4 +1,5 @@
-const CACHE = "quote-chaser-v3";
+// Bump this whenever the public shell changes so installed PWAs discard stale branding/pricing.
+const CACHE = "quote-chaser-v4";
 const PUBLIC_SHELL = ["/", "/manifest.webmanifest", "/icons/icon.svg"];
 
 self.addEventListener("install", (event) => {

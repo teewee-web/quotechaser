@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { LegalPage, SUPPORT_EMAIL } from "@/components/legal-page";
 import { LegalSection } from "@/components/legal-section";
+import { AnalyticsPreferences } from "@/components/analytics-preferences";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
     "How Quote-Chaser collects, uses, protects and retains personal data.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function Privacy() {
@@ -148,7 +150,7 @@ export default function Privacy() {
           .
         </p>
       </LegalSection>
-      <LegalSection title="10. Analytics, cookies and local storage">
+      <div id="analytics"><LegalSection title="10. Analytics, cookies and local storage">
         <p>
           Quote-Chaser uses essential browser storage and authentication cookies
           to keep users signed in, protect accounts and provide the service.
@@ -160,15 +162,16 @@ export default function Privacy() {
           include customer names, contact details, job descriptions, quote
           values or PDF contents. PostHog autocapture and session recording are
           disabled, and browser analytics are configured without persistent
-          analytics cookies. We use this information for our legitimate interest
-          in understanding and improving the service.
+          analytics cookies. Optional browser analytics starts only after you
+          choose to allow it.
         </p>
+        <AnalyticsPreferences />
         <p>
           If advertising technologies or broader optional analytics are
           introduced, this policy and the appropriate consent controls will be
           updated first.
         </p>
-      </LegalSection>
+      </LegalSection></div>
       <LegalSection title="11. Changes to this policy">
         <p>
           We may update this policy when the service, our providers or the law

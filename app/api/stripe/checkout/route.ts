@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { stripeRequest } from "@/lib/stripe";
+import { STRIPE_TRIAL_DAYS, stripeRequest } from "@/lib/stripe";
 import { NextResponse } from "next/server";
 
 type CheckoutSession = { url: string | null };
@@ -20,6 +20,7 @@ export async function POST(request: Request) {
     client_reference_id: user.id,
     "metadata[supabase_user_id]": user.id,
     "subscription_data[metadata][supabase_user_id]": user.id,
+    "subscription_data[trial_period_days]": String(STRIPE_TRIAL_DAYS),
     success_url: `${origin}/settings?billing=success`,
     cancel_url: `${origin}/settings?billing=cancelled`,
     allow_promotion_codes: "true",
@@ -34,5 +35,3 @@ export async function POST(request: Request) {
     return NextResponse.redirect(new URL("/settings?billing=error", request.url), 303);
   }
 }
-
-

@@ -1,2 +1,15 @@
-import Link from "next/link";import { AlertTriangle } from "lucide-react";import { AuthForm } from "@/components/auth-form";import { AuthShell } from "@/components/auth-shell";import { login } from "../actions";
-export default async function Page({searchParams}:{searchParams:Promise<{error_code?:string;error_description?:string}>}){const {error_code,error_description}=await searchParams;const expired=error_code==="otp_expired";return <AuthShell title="Welcome back" copy="Log in to see today’s follow-ups.">{error_code&&<div role="alert" className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950"><p className="flex items-center gap-2 font-extrabold"><AlertTriangle size={19}/>{expired?"That reset link has expired":"The email link could not be used"}</p><p className="mt-1 text-sm leading-6">{expired?"Request a new reset email and open only the newest link.":error_description||"Please request a new password reset link."}</p><Link href="/forgot-password" className="mt-3 inline-flex font-extrabold text-teal-700 underline">Request a new link</Link></div>}<AuthForm mode="login" action={login}/></AuthShell>}
+import Link from "next/link";
+import { AlertTriangle } from "lucide-react";
+import { AuthForm } from "@/components/auth-form";
+import { AuthShell } from "@/components/auth-shell";
+import { login } from "../actions";
+
+export default async function Page({ searchParams }: { searchParams: Promise<{ error_code?: string; error_description?: string; next?: string }> }) {
+  const { error_code, error_description, next } = await searchParams;
+  const expired = error_code === "otp_expired";
+  const safeNext = next?.startsWith("/") && !next.startsWith("//") ? next : undefined;
+  return <AuthShell title="Welcome back" copy="Log in to see today’s follow-ups.">
+    {error_code && <div role="alert" className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950"><p className="flex items-center gap-2 font-extrabold"><AlertTriangle size={19}/>{expired ? "That reset link has expired" : "The email link could not be used"}</p><p className="mt-1 text-sm leading-6">{expired ? "Request a new reset email and open only the newest link." : error_description || "Please request a new password reset link."}</p><Link href="/forgot-password" className="mt-3 inline-flex font-extrabold text-teal-700 underline">Request a new link</Link></div>}
+    <AuthForm mode="login" action={login} next={safeNext}/>
+  </AuthShell>;
+}

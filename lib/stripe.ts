@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 const STRIPE_API = "https://api.stripe.com/v1";
+export const STRIPE_TRIAL_DAYS = 7;
 
 function secretKey() {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -50,5 +51,3 @@ export type StripeSubscriptionStatus =
   | "incomplete"
   | "incomplete_expired"
   | "paused";
-
-

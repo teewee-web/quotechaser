@@ -11,6 +11,7 @@ work/
 .vercel-data/
 .git-publish/
 npm-debug.log*
+.codex-*.log
 *.pem
 *.p12
 *.pfx

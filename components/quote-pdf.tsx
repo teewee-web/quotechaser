@@ -2,7 +2,6 @@
 /* eslint-disable jsx-a11y/alt-text -- React PDF Image is not an HTML image. */
 import Link from "next/link";
 import { useState } from "react";
-import posthog from "posthog-js";
 import {
   Document,
   Page,
@@ -27,6 +26,7 @@ import {
   Share2,
   FileText,
 } from "lucide-react";
+import { recordQuoteDelivery } from "@/app/(app)/actions";
 
 type Data = {
   quote: Quote;
@@ -322,6 +322,7 @@ export default function QuotePdfActions({ data }: { data: Data }) {
   const message = `Hi ${c?.name}, your quotation ${q.quote_number || ""} for ${gbp(q.final_total || q.value_pence)} is ready and valid until ${ukDate(q.expiry_date)}.`;
   const subject = `Quotation ${q.quote_number || ""} from ${b.business_name || "Quote-Chaser"}`;
   const body = `Hi ${c?.name},\n\nPlease find your quotation for ${q.job_description}.\n\nQuote number: ${q.quote_number}\nTotal: ${gbp(q.final_total || q.value_pence)}\nValid until: ${ukDate(q.expiry_date)}\n\nPlease contact us if you have any questions.\n\nKind regards,\n${b.business_name}`;
+  function record(channel: "download" | "email" | "whatsapp" | "share" | "print") { const form = new FormData(); form.set("quote_id", q.id); form.set("channel", channel); void recordQuoteDelivery(form); }
   async function share() {
     try {
       const blob = await pdf(<QuoteDocument data={data} />).toBlob(),
@@ -331,6 +332,7 @@ export default function QuotePdfActions({ data }: { data: Data }) {
       else if (navigator.share)
         await navigator.share({ title: subject, text: message });
       else throw new Error();
+      record("share");
     } catch {
       alert(
         "Sharing is not available here. Download the PDF and share it from your device instead.",
@@ -349,7 +351,7 @@ export default function QuotePdfActions({ data }: { data: Data }) {
           onClick={() => {
             setOpen(true);
             if (process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN)
-              posthog.capture("pdf_generated");
+              window.quoteChaserAnalytics?.("pdf_generated");
           }}
         >
           <FileText size={18} />
@@ -363,6 +365,7 @@ export default function QuotePdfActions({ data }: { data: Data }) {
               document={<QuoteDocument data={data} />}
               fileName={filename}
               className="btn btn-primary"
+              onClick={() => record("download")}
             >
               {({ loading }) => (
                 <>
@@ -373,7 +376,7 @@ export default function QuotePdfActions({ data }: { data: Data }) {
             </PDFDownloadLink>
             <button
               className="btn btn-secondary"
-              onClick={() => window.print()}
+              onClick={() => { record("print"); window.print(); }}
             >
               <Printer size={17} />
               Print
@@ -388,6 +391,7 @@ export default function QuotePdfActions({ data }: { data: Data }) {
                 href={whatsappUrl(c.mobile, message)}
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => record("whatsapp")}
               >
                 <MessageCircle size={17} />
                 WhatsApp
@@ -397,6 +401,7 @@ export default function QuotePdfActions({ data }: { data: Data }) {
               <a
                 className="btn btn-secondary"
                 href={`mailto:${encodeURIComponent(c.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`}
+                onClick={() => record("email")}
               >
                 <Mail size={17} />
                 Email

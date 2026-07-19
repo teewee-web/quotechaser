@@ -1,14 +1,15 @@
 "use client";
 import { useActionState } from "react";
 import Link from "next/link";
-import posthog from "posthog-js";
 import type { AuthState } from "@/app/(auth)/actions";
 export function AuthForm({
   mode,
   action,
+  next,
 }: {
   mode: "login" | "register" | "reset";
   action: (s: AuthState, f: FormData) => Promise<AuthState>;
+  next?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   return (
@@ -19,10 +20,11 @@ export function AuthForm({
           mode === "register" &&
           process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN
         )
-          posthog.capture("signup_started");
+          window.quoteChaserAnalytics?.("signup_started");
       }}
       className="mt-7 space-y-4"
     >
+      {mode === "login" && <input type="hidden" name="next" value={next || ""} />}
       {mode === "register" && (
         <label>
           <span className="label">Your name</span>
@@ -46,7 +48,8 @@ export function AuthForm({
             className="field"
             name="password"
             type="password"
-            minLength={8}
+            minLength={mode === "register" ? 10 : 8}
+            maxLength={128}
             autoComplete={
               mode === "login" ? "current-password" : "new-password"
             }

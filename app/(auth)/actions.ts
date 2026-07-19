@@ -11,22 +11,29 @@ export async function login(_: AuthState, form: FormData): Promise<AuthState> {
   });
   if (error) return { error: "Email or password not recognised." };
   await captureServerEvent(data.user.id, "user_login");
-  redirect("/dashboard");
+  const requested = String(form.get("next") || "");
+  const destination = requested.startsWith("/") && !requested.startsWith("//") ? requested : "/dashboard";
+  redirect(destination);
 }
 export async function register(
   _: AuthState,
   form: FormData,
 ): Promise<AuthState> {
   const password = String(form.get("password"));
-  if (password.length < 8)
-    return { error: "Use at least 8 characters for your password." };
+  const email = String(form.get("email") || "").trim().toLowerCase();
+  const name = String(form.get("name") || "").trim();
+  if (name.length < 2 || name.length > 200) return { error: "Enter your name." };
+  if (!/^\S+@\S+\.\S+$/.test(email) || email.length > 320) return { error: "Enter a valid email address." };
+  if (password.length < 10 || password.length > 128)
+    return { error: "Use between 10 and 128 characters for your password." };
   const s = await createClient();
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
   const { data, error } = await s.auth.signUp({
-    email: String(form.get("email")),
+    email,
     password,
-    options: { data: { name: String(form.get("name")) } },
+    options: { data: { name }, emailRedirectTo: `${siteUrl}/auth/callback?next=/dashboard` },
   });
-  if (error) return { error: error.message };
+  if (error) return { error: "We could not create the account. Check the details or try again shortly." };
   if (data.user) await captureServerEvent(data.user.id, "signup_completed");
   return {
     message: "Check your email to confirm your account, then log in.",
@@ -50,9 +57,7 @@ export async function resetPassword(
         error:
           "Too many reset attempts. Wait a few minutes, then try once more.",
       };
-    return {
-      error: `Supabase could not send the reset email: ${error.message}`,
-    };
+    return { error: "The reset email could not be sent. Please try again shortly." };
   }
   return {
     message:

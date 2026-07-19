@@ -1,10 +1,13 @@
 "use server";
 import { saveQuote } from "@/app/(app)/actions";
-import { createClient } from "@/lib/supabase/server";
-import { customerSchema } from "@/lib/validation";
-import { captureServerEvent } from "@/lib/analytics";
+import { customerSchema, parseQuoteItems, quoteSchema } from "@/lib/validation";
 
 export async function saveCustomerAndQuote(form: FormData) {
+  parseQuoteItems(form.get("items_json"));
+  const quoteCandidate = Object.fromEntries(form);
+  if (form.get("customer_mode") === "new") quoteCandidate.customer_id = "00000000-0000-0000-0000-000000000000";
+  const quote = quoteSchema.safeParse(quoteCandidate);
+  if (!quote.success) throw new Error(quote.error.issues[0]?.message || "Check the quote details.");
   if (form.get("customer_mode") === "new" && !form.get("id")) {
     const parsed = customerSchema.safeParse({
       name: form.get("new_customer_name"),
@@ -14,30 +17,6 @@ export async function saveCustomerAndQuote(form: FormData) {
       notes: "",
     });
     if (!parsed.success) throw new Error(parsed.error.issues[0].message);
-    const s = await createClient();
-    const {
-      data: { user },
-    } = await s.auth.getUser();
-    if (!user) throw new Error("Please log in again.");
-    const c = parsed.data;
-    const { data, error } = await s
-      .from("customers")
-      .insert({
-        name: c.name,
-        mobile: c.mobile || null,
-        email: c.email || null,
-        address: c.address || null,
-        notes: null,
-        user_id: user.id,
-      })
-      .select("id")
-      .single();
-    if (error || !data)
-      throw new Error(error?.message || "The customer could not be created.");
-    form.set("customer_id", data.id);
-    await captureServerEvent(user.id, "customer_created", {
-      source: "quote_flow",
-    });
   }
   return saveQuote(form);
 }

@@ -42,4 +42,3 @@ export function AnalyticsPreferences() {
 
   return <div className="mt-4 flex flex-wrap items-center gap-3"><button className="btn btn-primary" onClick={() => update("granted")}>Allow optional analytics</button><button className="btn btn-secondary" onClick={() => update("denied")}>Use essential storage only</button>{saved && <span className="text-sm font-bold">Current choice: {saved === "granted" ? "analytics allowed" : "essential only"}</span>}</div>;
 }
-

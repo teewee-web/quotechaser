@@ -30,4 +30,3 @@ revoke all on public.stripe_webhook_events from anon, authenticated;
 drop trigger if exists billing_subscriptions_updated on public.billing_subscriptions;
 create trigger billing_subscriptions_updated before update on public.billing_subscriptions
 for each row execute function public.set_updated_at();
-

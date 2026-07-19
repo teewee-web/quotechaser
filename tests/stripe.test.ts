@@ -1,6 +1,12 @@
 import { createHmac } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
-import { verifyStripeSignature } from "../lib/stripe";
+import { STRIPE_TRIAL_DAYS, verifyStripeSignature } from "../lib/stripe";
+
+describe("Stripe subscription settings", () => {
+  it("uses a seven-day trial", () => {
+    expect(STRIPE_TRIAL_DAYS).toBe(7);
+  });
+});
 
 describe("Stripe webhook signatures", () => {
   it("accepts a current correctly signed payload", () => {
@@ -20,4 +26,3 @@ describe("Stripe webhook signatures", () => {
     vi.useRealTimers();
   });
 });
-

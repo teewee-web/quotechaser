@@ -56,4 +56,3 @@ export async function POST(request: Request) {
   if (error) console.error(JSON.stringify({ level: "error", message: "Stripe event audit failed", eventId: event.id }));
   return NextResponse.json({ received: true });
 }
-

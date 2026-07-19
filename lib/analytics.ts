@@ -12,7 +12,7 @@ export async function captureServerEvent(
   properties?: Record<string, string | number | boolean>,
 ) {
   const projectToken = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
-  if (!projectToken) return;
+  if (!projectToken || process.env.POSTHOG_SERVER_ANALYTICS_ENABLED !== "true") return;
 
   const client = new PostHog(projectToken, {
     host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",

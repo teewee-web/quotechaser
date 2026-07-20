@@ -29,7 +29,7 @@ export function canUseProductionAnalytics() {
 }
 
 function loadGa4() {
-  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-00TVPH4PER";
   if (measurementId !== "G-00TVPH4PER" || document.querySelector(`script[data-qc-ga4="${measurementId}"]`)) return;
   window.dataLayer = window.dataLayer || [];
   window.gtag = (...args: unknown[]) => window.dataLayer?.push(args);

@@ -43,7 +43,7 @@ async function sendPostHog(distinctId: string, event: AnalyticsEvent, properties
 }
 
 async function sendGa4(distinctId: string, event: AnalyticsEvent, properties: AnalyticsProperties) {
-  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-00TVPH4PER";
   const apiSecret = process.env.GA4_API_SECRET;
   if (measurementId !== "G-00TVPH4PER" || !apiSecret) return;
   const response = await fetch(

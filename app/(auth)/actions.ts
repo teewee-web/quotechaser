@@ -34,7 +34,7 @@ export async function register(
     options: { data: { name }, emailRedirectTo: `${siteUrl}/auth/callback?next=/dashboard` },
   });
   if (error) return { error: "We could not create the account. Check the details or try again shortly." };
-  if (data.user) await captureServerEvent(data.user.id, "signup_completed");
+  if (data.user) await captureServerEvent(data.user.id, "registration_completed", {}, { once: true });
   return {
     message: "Check your email to confirm your account, then log in.",
   };

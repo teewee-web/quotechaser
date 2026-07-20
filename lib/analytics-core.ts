@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.7 seconds
-Output:
 export const ANALYTICS_EVENTS = [
   "registration_completed",
   "first_customer_created",
@@ -45,4 +42,3 @@ export function isProductionAnalyticsEnvironment(env: NodeJS.ProcessEnv = proces
 export function isAutomatedBrowser(userAgent: string) {
   return /bot|crawler|spider|headless|playwright|puppeteer|cypress|selenium/i.test(userAgent);
 }
-

@@ -1,3 +1,4 @@
+import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const securityHeaders = [
@@ -15,4 +16,12 @@ const nextConfig: NextConfig = {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
 };
-export default nextConfig;
+
+export default withSentryConfig(nextConfig, {
+  org: "quote-chaser",
+  project: "javascript-nextjs",
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  tunnelRoute: "/monitoring",
+  silent: true,
+  telemetry: false,
+});

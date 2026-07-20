@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { STRIPE_TRIAL_DAYS, stripeRequest } from "@/lib/stripe";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
+import { captureServerEvent } from "@/lib/analytics";
 
 type CheckoutSession = { url: string | null };
 
@@ -29,8 +31,10 @@ export async function POST(request: Request) {
   try {
     const session = await stripeRequest<CheckoutSession>("/checkout/sessions", form);
     if (!session.url) throw new Error("Stripe did not return a checkout address.");
+    await captureServerEvent(user.id, "checkout_started");
     return NextResponse.redirect(session.url, 303);
   } catch (error) {
+    Sentry.captureException(error, { tags: { operation: "stripe_checkout" } });
     console.error(JSON.stringify({ level: "error", message: "Checkout creation failed", userId: user.id, error: error instanceof Error ? error.message : String(error) }));
     return NextResponse.redirect(new URL("/settings?billing=error", request.url), 303);
   }

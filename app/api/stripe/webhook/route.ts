@@ -1,6 +1,8 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyStripeSignature } from "@/lib/stripe";
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
+import { captureServerEvent } from "@/lib/analytics";
 
 type StripeObject = {
   id: string;
@@ -20,6 +22,7 @@ export async function POST(request: Request) {
   const payload = await request.text();
   const secret = process.env.STRIPE_WEBHOOK_SECRET || "";
   if (!verifyStripeSignature(payload, request.headers.get("stripe-signature"), secret)) {
+    Sentry.captureMessage("Stripe webhook signature verification failed", { level: "warning", tags: { operation: "stripe_webhook" } });
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
   let event: StripeEvent;
@@ -50,9 +53,15 @@ export async function POST(request: Request) {
       current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
       cancel_at_period_end: !!object.cancel_at_period_end,
     }, { onConflict: "user_id" });
+    if (["active", "trialing"].includes(object.status || "")) {
+      await captureServerEvent(userId, "subscription_activated", {}, { once: true });
+    }
   }
 
   const { error } = await admin.from("stripe_webhook_events").insert({ event_id: event.id, event_type: event.type });
-  if (error) console.error(JSON.stringify({ level: "error", message: "Stripe event audit failed", eventId: event.id }));
+  if (error) {
+    Sentry.captureException(error, { tags: { operation: "stripe_webhook_audit" }, extra: { eventId: event.id, eventType: event.type } });
+    console.error(JSON.stringify({ level: "error", message: "Stripe event audit failed", eventId: event.id }));
+  }
   return NextResponse.json({ received: true });
 }

@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ServiceWorker } from "@/components/service-worker";
 import { AnalyticsConsent } from "@/components/analytics-consent";
+import { AnalyticsNavigation } from "@/components/analytics-navigation";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://quote-chaser.com"),
@@ -25,5 +27,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return <html lang="en-GB"><body>{children}<ServiceWorker /><AnalyticsConsent /></body></html>;
+  return <html lang="en-GB"><body>{children}<ServiceWorker /><Suspense fallback={null}><AnalyticsNavigation /></Suspense><AnalyticsConsent /></body></html>;
 }

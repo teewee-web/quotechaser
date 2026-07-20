@@ -38,9 +38,9 @@ export async function saveCustomer(form: FormData) {
   const { error } = await q;
   if (error) throw new Error("The customer could not be saved. Please try again.");
   if (isNew)
-    await captureServerEvent(user.id, "customer_created", {
+    await captureServerEvent(user.id, "first_customer_created", {
       source: "customer_page",
-    });
+    }, { once: true });
   revalidatePath("/customers");
   redirect("/customers");
 }
@@ -113,8 +113,8 @@ export async function saveQuote(form: FormData) {
   if (error || !data) throw new Error("The quote could not be saved. Nothing was changed; please try again.");
   const result = data as { quote_id: string; customer_created?: boolean };
   id = result.quote_id;
-  if (result.customer_created) await captureServerEvent(user.id, "customer_created", { source: "quote_flow" });
-  if (isNew) await captureServerEvent(user.id, "quote_created");
+  if (result.customer_created) await captureServerEvent(user.id, "first_customer_created", { source: "quote_flow" }, { once: true });
+  if (isNew) await captureServerEvent(user.id, "first_quote_created", {}, { once: true });
   revalidatePath("/quotes");
   revalidatePath(`/quotes/${id}`);
   revalidatePath("/dashboard");
@@ -138,7 +138,7 @@ export async function recordQuoteDelivery(form: FormData) {
   revalidatePath("/dashboard");
 }
 export async function updateQuoteStatus(form: FormData) {
-  const { s } = await owned();
+  const { s, user } = await owned();
   const id = String(form.get("id")),
     status = String(form.get("status"));
   if (!["Won", "Lost"].includes(status))
@@ -147,6 +147,7 @@ export async function updateQuoteStatus(form: FormData) {
   if (status === "Won") patch.next_follow_up_date = null;
   const { error } = await s.from("quotes").update(patch).eq("id", id);
   if (error) throw new Error("The quote status could not be changed.");
+  if (status === "Won") await captureServerEvent(user.id, "quote_marked_won");
   revalidatePath("/quotes");
   revalidatePath("/dashboard");
   revalidatePath("/reports");
@@ -184,6 +185,7 @@ export async function followUp(form: FormData) {
     .update({ next_follow_up_date: next, status: "Pending" })
     .eq("id", quoteId);
   if (error) throw new Error("The next follow-up date could not be updated.");
+  if (action === "completed") await captureServerEvent(user.id, "first_follow_up_completed", {}, { once: true });
   revalidatePath("/follow-ups");
   revalidatePath("/dashboard");
 }

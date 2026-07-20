@@ -15,13 +15,6 @@ export function AuthForm({
   return (
     <form
       action={formAction}
-      onSubmit={() => {
-        if (
-          mode === "register" &&
-          process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN
-        )
-          window.quoteChaserAnalytics?.("signup_started");
-      }}
       className="mt-7 space-y-4"
     >
       {mode === "login" && <input type="hidden" name="next" value={next || ""} />}
@@ -80,7 +73,7 @@ export function AuthForm({
       )}
       <button disabled={pending} className="btn btn-primary w-full">
         {pending
-          ? "Please wait…"
+          ? "Please waitâ€¦"
           : mode === "login"
             ? "Log in"
             : mode === "register"
